@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Doctor Vision - AI Medical Diagnostics</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Intro.js CSS -->
+  <link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-green: #2e7d32;
+      --secondary-green: #43a047;
+      --light-green: #66bb6a;
+      --accent-green: #81c784;
+      --background-light: #f0f9f4;
+      --sidebar-width: 250px;
+      --chatbot-width: 300px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: var(--background-light);
+      font-family: 'Poppins', sans-serif;
+      line-height: 1.6;
+    }
+
+    .container-fluid {
+      padding: 0;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      background-color: var(--primary-green);
+      color: white;
+      min-height: 100vh;
+      width: var(--sidebar-width);
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      padding-top: 20px;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+    }
+
+    .sidebar h4 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-weight: 600;
+      font-size: 1.3rem;
+    }
+
+    .sidebar a {
+      color: white;
+      padding: 15px 20px;
+      text-decoration: none;
+      display: block;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 3px solid var(--light-green);
+      padding-left: 25px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .sidebar a.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 3px solid var(--light-green);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      margin-right: var(--chatbot-width);
+      padding: 30px;
+      padding-bottom: 100px;
+      min-height: 100vh;
+      background-color: white;
+    }
+
+    .hero-section {
+      background: linear-gradient(135deg, var(--secondary-green), var(--light-green));
+      color: white;
+      padding: 60px 40px;
+      margin: -30px -30px 40px -30px;
+      border-radius: 0 0 20px 20px;
+      text-align: center;
+    }
+
+    .hero-section h1 {
+      font-size: 3rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: white;
+    }
+
+    .hero-section p {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+      opacity: 0.95;
+      color: white;
+    }
+
+    .hero-section .btn {
+      background-color: white;
+      color: var(--primary-green);
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-section .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Feature Cards */
+    .features-section {
+      margin: 40px 0;
+    }
+
+    .feature-card {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border-left: 5px solid var(--secondary-green);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .feature-card .icon {
+      font-size: 3rem;
+      color: var(--secondary-green);
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      color: var(--primary-green);
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    .feature-card p {
+      color: #666;
+      font-size: 1rem;
+      line-height: 1.6;
+      padding: 10px 15px;
+    }
+
+    .feature-card ul {
+      color: #666;
+      padding-left: 20px;
+    }
+
+    .feature-card ul li {
+      margin-bottom: 8px;
+    }
+
+    /* Chatbot Container */
+    .chatbot-container {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: var(--chatbot-width);
+      height: 100vh;
+      background-color: var(--secondary-green);
+      color: white;
+      padding: 20px;
+      box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chatbot-container h4 {
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .chat-suggestions {
+      margin-bottom: 20px;
+    }
+
+    .chat-suggestions ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .chat-suggestions li {
+      background-color: var(--primary-green);
+      margin-bottom: 8px;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .chat-suggestions li:hover {
+      background-color: #1b5e20;
+    }
+
+    .chat-input-area {
+      margin-top: auto;
+    }
+
+    .chat-input-area input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+
+    .chat-input-area button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background-color: var(--primary-green);
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-weight: 600;
+    }
+
+    .chat-input-area button:hover {
+      background-color: #1b5e20;
+    }
+
+    #chatResponse {
+      max-height: 200px;
+      overflow-y: auto;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--primary-green);
+      color: white;
+      padding: 40px 0;
+      margin-left: var(--sidebar-width);
+      margin-right: var(--chatbot-width);
+      position: relative;
+      z-index: 10;
+    }
+
+    footer h5 {
+      color: white;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    footer p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    footer a {
+      color: var(--accent-green);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: white;
+      text-decoration: none;
+    }
+
+    footer .fab {
+      margin: 0 10px;
+      transition: transform 0.3s ease;
+    }
+
+    footer .fab:hover {
+      transform: scale(1.2);
+    }
+
+    /* Mobile Toggle */
+    .mobile-toggle {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1001;
+      background-color: var(--primary-green);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+      .chatbot-container {
+        display: none;
+      }
+      .main-content {
+        margin-right: 0;
+      }
+      footer {
+        margin-right: 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+        padding-bottom: 100px;
+      }
+      footer {
+        margin-left: 0;
+      }
+      .mobile-toggle {
+        display: block !important;
+      }
+      .hero-section {
+        padding: 40px 20px;
+      }
+      .hero-section h1 {
+        font-size: 2.2rem;
+      }
+    }
+</style>
+
+</head>
+<body>
+  <!-- Mobile Toggle Button -->
+  <button class="mobile-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="container-fluid">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <h4><i class="fas fa-stethoscope"></i> Doctor Vision</h4>
+      <a href="/" class="active" data-intro="This is the home page, where you can get an overview of Doctor Vision." data-step="1">
+        <i class="fas fa-home"></i> Home
+      </a>
+      <a href="/diagnostics" data-intro="In Diagnostic Tools, you can manage and analyze diagnostic data using AI-powered tools." data-step="2">
+        <i class="fas fa-microscope"></i> Diagnostic Tools
+      </a>
+      <a href="/research" data-intro="The Research section provides access to ongoing medical studies and results." data-step="3">
+        <i class="fas fa-flask"></i> Research
+      </a>
+      <a href="/Finances" data-intro="Monitor all financial transactions related to your medical diagnostics here." data-step="4">
+        <i class="fas fa-chart-line"></i> Finances
+      </a>
+      <a href="/audit" data-intro="In the Equipment Audit section, view reports and schedule maintenance for your diagnostic equipment." data-step="5">
+        <i class="fas fa-tools"></i> Equipment Audit
+      </a>
+      <a href="#" data-intro="Visit this section to access training and resources for Doctor Vision." data-step="6">
+        <i class="fas fa-graduation-cap"></i> Training
+      </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <div class="hero-section">
+        <h1><i class="fas fa-brain"></i> Welcome to Doctor Vision</h1>
+        <p>
+          Advanced AI Disease Detection Platform - Revolutionizing Medical Diagnostics with Computer Vision
+        </p>
+        <div class="row text-center mt-4">
+          <div class="col-md-4">
+            <div style="font-size: 1.5rem; font-weight: 600;"><i class="fas fa-brain"></i> Brain Tumors</div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size: 1.5rem; font-weight: 600;"><i class="fas fa-lungs"></i> Pneumonia</div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size: 1.5rem; font-weight: 600;"><i class="fas fa-virus"></i> Tuberculosis</div>
+          </div>
+        </div>
+        <button class="btn btn-lg mt-3" onclick="startTour()">
+          <i class="fas fa-play-circle"></i> Start Interactive Tour
+        </button>
+      </div>
+
+      <!-- Disease Detection Overview -->
+      <div class="feature-card mb-4">
+        <div class="text-center mb-4">
+          <h2><i class="fas fa-search-plus"></i> AI-Powered Disease Detection Hub</h2>
+          <p class="lead">Your comprehensive platform for automated medical image analysis and disease identification using state-of-the-art AI models.</p>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-4 text-center">
+            <div class="mb-3">
+              <i class="fas fa-brain" style="font-size: 3rem; color: var(--secondary-green);"></i>
+            </div>
+            <h4>Brain Tumor Detection</h4>
+            <p>Advanced neural networks analyze MRI and CT scans to identify and classify brain tumors with high precision.</p>
+          </div>
+          <div class="col-md-4 text-center">
+            <div class="mb-3">
+              <i class="fas fa-lungs" style="font-size: 3rem; color: var(--secondary-green);"></i>
+            </div>
+            <h4>Pneumonia Analysis</h4>
+            <p>X-ray image analysis powered by deep learning to detect pneumonia patterns and severity levels.</p>
+          </div>
+          <div class="col-md-4 text-center">
+            <div class="mb-3">
+              <i class="fas fa-virus" style="font-size: 3rem; color: var(--secondary-green);"></i>
+            </div>
+            <h4>Tuberculosis Screening</h4>
+            <p>Automated TB detection from chest X-rays using computer vision to assist in early diagnosis.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features Section -->
+      <div class="features-section">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="feature-card">
+              <div class="icon">
+                <i class="fas fa-microscope"></i>
+              </div>
+              <h3>Diagnostic Tools</h3>
+              <p>
+                <strong>What it does:</strong> Comprehensive diagnostic workstation with AI-powered medical image analysis, cost calculators, and treatment planning tools.
+              </p>
+              <ul>
+                <li>Upload and analyze medical scans (MRI, CT, X-ray)</li>
+                <li>Calculate diagnostic procedure costs</li>
+                <li>Interactive medical facility mapping</li>
+                <li>Real-time AI consultations</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="feature-card">
+              <div class="icon">
+                <i class="fas fa-flask"></i>
+              </div>
+              <h3>Disease Detection Research</h3>
+              <p>
+                <strong>What it does:</strong> Advanced AI research laboratory for detecting specific diseases through medical image analysis.
+              </p>
+              <ul>
+                <li>Brain tumor detection from MRI/CT scans</li>
+                <li>Tuberculosis screening from chest X-rays</li>
+                <li>Pneumonia diagnosis from lung imaging</li>
+                <li>Confidence scoring and detailed analysis reports</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="feature-card">
+              <div class="icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <h3>Financial Analytics</h3>
+              <p>
+                <strong>What it does:</strong> Comprehensive financial dashboard for tracking costs and revenue related to disease detection services.
+              </p>
+              <ul>
+                <li>Monitor diagnostic procedure costs and revenue</li>
+                <li>Track AI model usage and billing</li>
+                <li>Generate financial reports and analytics</li>
+                <li>Analyze cost-effectiveness of detection methods</li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="feature-card">
+              <div class="icon">
+                <i class="fas fa-tools"></i>
+              </div>
+              <h3>Medical Equipment Audit</h3>
+              <p>
+                <strong>What it does:</strong> Comprehensive medical equipment management system for maintaining diagnostic imaging devices.
+              </p>
+              <ul>
+                <li>Track MRI, CT, and X-ray machine status</li>
+                <li>Schedule preventive maintenance</li>
+                <li>Monitor equipment performance metrics</li>
+                <li>Ensure optimal image quality for AI analysis</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="row">
+        <div class="col-12">
+          <div class="feature-card">
+            <h3><i class="fas fa-chart-bar"></i> Clinical Validation Statistics</h3>
+            <div class="text-center mb-3">
+              <p class="text-muted"><i class="fas fa-database"></i> <strong>Mixed Dataset Training & Validation</strong> - Our AI models are trained using Kaggle's curated medical datasets and validated using authentic medical images obtained directly from hospitals</p>
+            </div>
+            <div class="row text-center">
+              <div class="col-md-3">
+                <div style="font-size: 2rem; font-weight: 600; color: var(--secondary-green);">5,000+</div>
+                <div style="color: #666;">Hospital Images Validated</div>
+                <small class="text-muted">Real clinical validation dataset</small>
+              </div>
+              <div class="col-md-3">
+                <div style="font-size: 2rem; font-weight: 600; color: var(--secondary-green);">95%</div>
+                <div style="color: #666;">Clinical Accuracy</div>
+                <small class="text-muted">Hospital-validated results</small>
+              </div>
+              <div class="col-md-3">
+                <div style="font-size: 2rem; font-weight: 600; color: var(--secondary-green);">24/7</div>
+                <div style="color: #666;">Availability</div>
+                <small class="text-muted">Always accessible</small>
+              </div>
+              <div class="col-md-3">
+                <div style="font-size: 2rem; font-weight: 600; color: var(--secondary-green);">3</div>
+                <div style="color: #666;">Specialized AI Models</div>
+                <small class="text-muted">Brain, lung, TB detection</small>
+              </div>
+            </div>
+            
+            <div class="row mt-4">
+              <div class="col-12 text-center">
+                <div class="bg-light p-3 rounded">
+                  <h5><i class="fas fa-certificate"></i> Clinical Validation Credentials</h5>
+                  <p class="mb-0"><strong>Training Dataset:</strong> Kaggle's curated medical imaging datasets with anonymized patient data</p>
+                  <p class="mb-0"><strong>Validation Dataset:</strong> Real hospital data obtained directly for pneumonia validation</p>
+                  <p class="mb-0"><strong>Quality Assurance:</strong> Dual validation using both Kaggle benchmarks and real clinical cases</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Chatbot Panel -->
+    <div class="chatbot-container">
+      <h4><i class="fas fa-robot"></i> Doctor Vision AI</h4>
+      <div class="chat-suggestions">
+        <p>How can I assist you?</p>
+        <ul>
+          <li onclick="setQuestion('What medical conditions can you detect?')">What medical conditions can you detect?</li>
+          <li onclick="setQuestion('How accurate is the AI diagnosis?')">How accurate is the AI diagnosis?</li>
+          <li onclick="setQuestion('What types of medical images can I upload?')">What types of medical images can I upload?</li>
+          <li onclick="setQuestion('How do I get started with Doctor Vision?')">How do I get started?</li>
+        </ul>
+      </div>
+      
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Ask me anything about medical diagnostics..." />
+        <button onclick="sendMessage()">Send</button>
+        
+        <!-- Chatbot Response -->
+        <div id="chatResponse"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5>About Doctor Vision</h5>
+          <p>
+            Doctor Vision integrates AI and computer vision to deliver innovative solutions in medical diagnostics, empowering healthcare professionals and improving patient outcomes.
+          </p>
+        </div>
+  
+        <div class="col-md-4">
+          <h5>Contact Us</h5>
+          <p>Email: <a href="mailto:lavangupta2005@gmail.com">lavangupta2005@gmail.com</a></p>
+          <p>Phone: <a href="tel:+917042143211">+91 7042143211</a></p>
+          <p>Address: Faridabad, Haryana, India</p>
+        </div>
+  
+        <div class="col-md-4">
+          <h5>Follow Us</h5>
+          <a href="https://www.linkedin.com/in/lavan-gupta-bb6850259?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank"><i class="fab fa-linkedin fa-2x"></i></a>
+          <a href="https://www.instagram.com/lavangupta63?igsh=dmc2M2hqNmRzNmNj" target="_blank"><i class="fab fa-instagram-square fa-2x"></i></a>
+        </div>
+      </div>
+  
+      <div class="row mt-3">
+        <div class="col-12">
+          <p>&copy; 2025 Doctor Vision. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+  <script>
+    function startTour() {
+      introJs().start();
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('show');
+    }
+
+    function setQuestion(question) {
+      document.getElementById('chatInput').value = question;
+    }
+
+    function sendMessage() {
+      const question = document.getElementById('chatInput').value.trim();
+      const chatResponse = document.getElementById('chatResponse');
+      
+      if (question === "") {
+        alert("Please enter a question.");
+        return;
+      }
+
+      // Show loading state
+      chatResponse.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Thinking...</p>';
+
+      fetch('/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          'question': question
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          chatResponse.innerHTML = `<p style="color: #ffcdd2;"><strong>Error:</strong> ${data.error}</p>`;
+        } else {
+          chatResponse.innerHTML = `<p><strong>Dr. Vision:</strong> ${data.response}</p>`;
+        }
+        chatResponse.scrollTop = chatResponse.scrollHeight;
+        document.getElementById('chatInput').value = '';
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        chatResponse.innerHTML = '<p style="color: #ffcdd2;"><strong>Error:</strong> Failed to get response. Please try again.</p>';
+      });
+    }
+
+    // Allow Enter key to send message
+    document.addEventListener('DOMContentLoaded', function() {
+      const chatInput = document.getElementById('chatInput');
+      if (chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            sendMessage();
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

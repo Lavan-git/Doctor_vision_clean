@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Research - Doctor Vision</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-green: #2e7d32;
+            --secondary-green: #43a047;
+            --light-green: #66bb6a;
+            --accent-green: #81c784;
+            --background-light: #f0f9f4;
+            --sidebar-width: 250px;
+            --chatbot-width: 300px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+        body {
+            background-color: var(--background-light);
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+        }
+
+        .container-fluid {
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: var(--primary-green);
+            color: white;
+            min-height: 100vh;
+            width: var(--sidebar-width);
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar h4 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+
+        .sidebar a {
+            color: white;
+            padding: 15px 20px;
+            text-decoration: none;
+            display: block;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--light-green);
+            padding-left: 25px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--light-green);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-right: var(--chatbot-width);
+            padding: 30px;
+            padding-bottom: 100px;
+            min-height: 100vh;
+            background-color: white;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--secondary-green), var(--light-green));
+            color: white;
+            padding: 20px 30px;
+            margin: -30px -30px 30px -30px;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 600;
+        }
+
+        .page-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+
+        /* Form Styling */
+        .upload-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--secondary-green);
+        }
+
+        .form-control {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            transition: border-color 0.3s ease;
+            width: 100%;
+            min-width: 300px;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Fix dropdown text visibility */
+        select.form-control {
+            height: 50px;
+            padding: 12px 40px 12px 15px;
+            font-size: 1rem;
+            line-height: 1.5;
+            text-overflow: clip;
+            white-space: nowrap;
+            overflow: visible;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="5" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+        }
+
+        select.form-control option {
+            padding: 12px 15px;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: initial;
+            height: auto;
+            line-height: 1.4;
+        }
+
+        /* Ensure proper spacing for form groups */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            display: block;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary-green);
+            box-shadow: 0 0 0 0.2rem rgba(67, 160, 71, 0.25);
+        }
+
+        .upload-instruction {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .image-preview {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Results Section */
+        .results-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f44336;
+        }
+
+        .success-message {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+        }
+
+        /* Table Styling */
+        .table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .table thead th {
+            background-color: var(--secondary-green);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary-green), var(--light-green));
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+            transform: translateY(-1px);
+        }
+
+        /* Chatbot Container */
+        .chatbot-container {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: var(--chatbot-width);
+            height: 100vh;
+            background-color: var(--secondary-green);
+            color: white;
+            padding: 20px;
+            box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chatbot-container h4 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .chat-suggestions {
+            margin-bottom: 20px;
+        }
+
+        .chat-suggestions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .chat-suggestions li {
+            background-color: var(--primary-green);
+            margin-bottom: 8px;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .chat-suggestions li:hover {
+            background-color: #1b5e20;
+        }
+
+        .chat-input-area {
+            margin-top: auto;
+        }
+
+        .chat-input-area input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .chat-input-area button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background-color: var(--primary-green);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
+
+        .chat-input-area button:hover {
+            background-color: #1b5e20;
+        }
+
+        #chatResponse {
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 40px 0;
+            margin-top: 50px;
+            margin-left: var(--sidebar-width);
+            margin-right: var(--chatbot-width);
+            position: relative;
+            z-index: 50;
+        }
+
+        footer h5 {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        footer p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        footer a {
+            color: var(--accent-green);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: white;
+            text-decoration: none;
+        }
+
+        footer .fab {
+            margin: 0 10px;
+            transition: transform 0.3s ease;
+        }
+
+        footer .fab:hover {
+            transform: scale(1.2);
+        }
+
+        /* Mobile Toggle */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .chatbot-container {
+                display: none;
+            }
+            .main-content {
+                margin-right: 0;
+            }
+            footer {
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+                padding-bottom: 100px;
+            }
+            footer {
+                margin-left: 0;
+            }
+            .mobile-toggle {
+                display: block !important;
+            }
+        }
+    </style>
+    
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="container-fluid">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <h4><i class="fas fa-stethoscope"></i> Doctor Vision</h4>
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/diagnostics"><i class="fas fa-microscope"></i> Diagnostic Tools</a>
+            <a href="/research" class="active"><i class="fas fa-flask"></i> Research</a>
+            <a href="/Finances"><i class="fas fa-chart-line"></i> Finances</a>
+            <a href="/audit"><i class="fas fa-tools"></i> Equipment Audit</a>
+            <a href="#"><i class="fas fa-graduation-cap"></i> Training</a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1><i class="fas fa-flask"></i> AI Disease Detection Research</h1>
+                <p>Advanced AI-powered medical image analysis for precise disease identification</p>
+            </div>
+
+            <!-- Tab Description -->
+            <div class="upload-section mb-4">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h3><i class="fas fa-info-circle"></i> What This Tab Does</h3>
+                        <p><strong>Purpose:</strong> AI-powered research laboratory for detecting specific diseases through medical image analysis using state-of-the-art computer vision models.</p>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <h5><i class="fas fa-brain"></i> Brain Tumors</h5>
+                                <ul class="list-unstyled">
+                                    <li>• MRI/CT scan analysis</li>
+                                    <li>• Tumor classification</li>
+                                    <li>• Size and location detection</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <h5><i class="fas fa-lungs"></i> Pneumonia</h5>
+                                <ul class="list-unstyled">
+                                    <li>• Chest X-ray analysis</li>
+                                    <li>• Lung infection detection</li>
+                                    <li>• Severity assessment</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <h5><i class="fas fa-virus"></i> Tuberculosis</h5>
+                                <ul class="list-unstyled">
+                                    <li>• TB screening from X-rays</li>
+                                    <li>• Early detection capability</li>
+                                    <li>• Risk level assessment</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-microscope" style="font-size: 4rem; color: var(--secondary-green);"></i>
+                        </div>
+                        <h4>AI Research Lab</h4>
+                        <p>Upload medical images and get instant AI-powered disease detection with confidence scoring.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disease Selection Section -->
+            <div class="upload-section">
+                <h3><i class="fas fa-search"></i> Select Disease for Analysis</h3>
+                <div class="form-group">
+                    <label for="diseaseSelect" class="font-weight-bold">Choose Disease Type:</label>
+                    <select id="diseaseSelect" class="form-control" onchange="updateDiseaseInputs()">
+                        <option value="">-- Select Disease to Analyze --</option>
+                        <option value="brain_tumor">🧠 Brain Tumor Detection</option>
+                        <option value="tb">🫁 Tuberculosis (TB) Detection</option>
+                        <option value="pneumonia">💨 Pneumonia Detection</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Upload Section -->
+            <div id="uploadSection" class="upload-section hidden">
+                <h4><i class="fas fa-upload"></i> Upload Medical Image</h4>
+                <div id="uploadInstruction" class="upload-instruction"></div>
+                
+                <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="imageUpload" class="font-weight-bold">Select Image File:</label>
+                        <input type="file" name="file" id="imageUpload" class="form-control" accept="image/*" onchange="previewImage()" required>
+                        <small class="form-text text-muted">Supported formats: JPG, PNG, DICOM</small>
+                    </div>
+                    
+                    <input type="hidden" name="disease" id="diseaseInput">
+                    
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-brain"></i> Analyze Image
+                    </button>
+                </form>
+                
+                <div id="imagePreview" class="image-preview mt-4"></div>
+            </div>
+
+            <!-- Analysis Results Section -->
+            <div class="results-section">
+                <h3><i class="fas fa-chart-bar"></i> Analysis Results</h3>
+                
+                {% if error %}
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Analysis Error:</strong> {{ error }}
+                    </div>
+                {% elif predictions %}
+                    <div class="success-message mb-4">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>Analysis Complete!</strong> Results for {{ selected_disease or 'selected condition' }} detection:
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-tag"></i> Detection Class</th>
+                                    <th><i class="fas fa-hashtag"></i> Class ID</th>
+                                    <th><i class="fas fa-percentage"></i> Confidence Score</th>
+                                    <th><i class="fas fa-info-circle"></i> Interpretation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prediction in predictions %}
+                                    <tr>
+                                        <td><strong>{{ prediction['class'] }}</strong></td>
+                                        <td>{{ prediction['class_id'] }}</td>
+                                        <td>
+                                            <span class="badge badge-{% if prediction['confidence'] > 0.8 %}success{% elif prediction['confidence'] > 0.5 %}warning{% else %}danger{% endif %}">
+                                                {{ (prediction['confidence'] * 100) | round(2) }}%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if prediction['confidence'] > 0.8 %}
+                                                <span class="text-success">High confidence detection</span>
+                                            {% elif prediction['confidence'] > 0.5 %}
+                                                <span class="text-warning">Moderate confidence</span>
+                                            {% else %}
+                                                <span class="text-danger">Low confidence</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <p class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Disclaimer:</strong> These results are AI-generated predictions and should not replace professional medical diagnosis. Please consult with a qualified healthcare professional for medical advice.
+                        </p>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-upload fa-3x mb-3"></i>
+                        <p>Select a disease type and upload a medical image to begin analysis</p>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+
+        <!-- Chatbot Panel -->
+        <div class="chatbot-container">
+            <h4><i class="fas fa-robot"></i> Doctor Vision AI</h4>
+            <div class="chat-suggestions">
+                <p>How can I assist you?</p>
+                <ul>
+                    <li onclick="setQuestion('What can MRI scans detect?')">What can MRI scans detect?</li>
+                    <li onclick="setQuestion('How does X-ray imaging work?')">How does X-ray imaging work?</li>
+                    <li onclick="setQuestion('What are the signs of pneumonia?')">What are the signs of pneumonia?</li>
+                    <li onclick="setQuestion('How accurate is AI medical diagnosis?')">How accurate is AI medical diagnosis?</li>
+                </ul>
+            </div>
+            
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Ask about medical conditions..." />
+                <button onclick="sendMessage()">Send</button>
+                
+                <!-- Chatbot Response -->
+                <div id="chatResponse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+          <div class="row">
+            <div class="col-md-4">
+              <h5>About Doctor Vision</h5>
+              <p>
+                Doctor Vision integrates AI and computer vision to deliver innovative solutions in medical diagnostics, empowering healthcare professionals and improving patient outcomes.
+              </p>
+            </div>
+      
+            <div class="col-md-4">
+              <h5>Contact Us</h5>
+              <p>Email: <a href="mailto:lavangupta2005@gmail.com">lavangupta2005@gmail.com</a></p>
+              <p>Phone: <a href="tel:+917042143211">+91 7042143211</a></p>
+              <p>Address: Faridabad, Haryana, India</p>
+            </div>
+      
+            <div class="col-md-4">
+              <h5>Follow Us</h5>
+              <a href="https://www.linkedin.com/in/lavan-gupta-bb6850259?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank"><i class="fab fa-linkedin fa-2x"></i></a>
+              <a href="https://www.instagram.com/lavangupta63?igsh=dmc2M2hqNmRzNmNj" target="_blank"><i class="fab fa-instagram-square fa-2x"></i></a>
+            </div>
+          </div>
+      
+          <div class="row mt-3">
+            <div class="col-12">
+              <p>&copy; 2025 Doctor Vision. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    <!-- Add Font Awesome for Icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+
+
+
+
+function updateDiseaseInputs() {
+        const selectedDisease = document.getElementById("diseaseSelect").value;
+        const uploadSection = document.getElementById("uploadSection");
+        const diseaseInput = document.getElementById("diseaseInput");
+        const uploadInstruction = document.getElementById("uploadInstruction");
+
+        if (selectedDisease) {
+            uploadSection.classList.remove("hidden");
+            diseaseInput.value = selectedDisease;
+
+            let instructionText = "";
+            switch (selectedDisease) {
+                case "brain_tumor":
+                    instructionText = "Upload an MRI image for brain tumor analysis.";
+                    break;
+                case "tb":
+                    instructionText = "Upload a chest X-ray for tuberculosis analysis.";
+                    break;
+                case "pneumonia":
+                    instructionText = "Upload a chest X-ray for pneumonia analysis.";
+                    break;
+            }
+            uploadInstruction.innerText = instructionText;
+        } else {
+            uploadSection.classList.add("hidden");
+        }
+    }
+function previewImage() {
+  const fileInput = document.getElementById("imageUpload");
+  const imagePreview = document.getElementById("imagePreview");
+
+  // Clear the previous preview
+  imagePreview.innerHTML = "";
+
+  if (fileInput.files && fileInput.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = document.createElement("img");
+      img.src = e.target.result;
+      img.alt = "Uploaded Image";
+      img.style.maxWidth = "100%";
+      img.style.maxHeight = "300px";
+      imagePreview.appendChild(img);
+    };
+    reader.readAsDataURL(fileInput.files[0]);
+  } else {
+    imagePreview.innerText = "No image selected.";
+  }
+}
+
+function uploadImage() {
+  const fileInput = document.getElementById("imageUpload");
+  const imagePreview = document.getElementById("imagePreview");
+
+  if (fileInput.files.length === 0) {
+    alert("Please select an image before uploading.");
+    return;
+  }
+
+  const file = fileInput.files[0];
+  const formData = new FormData();
+  formData.append("file", file);
+
+  // Flask API Endpoint
+  const apiUrl = "http://localhost:5000/upload";
+
+  // Display a loading message
+  imagePreview.innerHTML = "Uploading and analyzing...";
+
+  // Upload the image and get inference results
+  fetch(apiUrl, {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to upload and analyze the image.");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Display the analysis results
+      imagePreview.innerHTML = `<h4>Analysis Results:</h4><pre>${JSON.stringify(data, null, 2)}</pre>`;
+    })
+    .catch((error) => {
+      console.error(error);
+      imagePreview.innerHTML = "Error: " + error.message;
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    </script>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('show');
+        }
+
+        function setQuestion(question) {
+            document.getElementById('chatInput').value = question;
+        }
+
+        function sendMessage() {
+            const question = document.getElementById('chatInput').value.trim();
+            const chatResponse = document.getElementById('chatResponse');
+            
+            if (question === "") {
+                alert("Please enter a question.");
+                return;
+            }
+
+            // Show loading state
+            chatResponse.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Thinking...</p>';
+
+            fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'question': question
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    chatResponse.innerHTML = `<p style="color: #ffcdd2;"><strong>Error:</strong> ${data.error}</p>`;
+                } else {
+                    chatResponse.innerHTML = `<p><strong>Dr. Vision:</strong> ${data.response}</p>`;
+                }
+                chatResponse.scrollTop = chatResponse.scrollHeight;
+                document.getElementById('chatInput').value = '';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                chatResponse.innerHTML = '<p style="color: #ffcdd2;"><strong>Error:</strong> Failed to get response. Please try again.</p>';
+            });
+        }
+
+        // Allow Enter key to send message
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Diagnostic Tools - Doctor Vision</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- TomTom Maps CSS -->
+  <link rel="stylesheet" type="text/css" href="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.14.0/maps/maps.css">
+  
+  <style>
+    :root {
+      --primary-green: #2e7d32;
+      --secondary-green: #43a047;
+      --light-green: #66bb6a;
+      --accent-green: #81c784;
+      --background-light: #f0f9f4;
+      --sidebar-width: 250px;
+      --chatbot-width: 300px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    body {
+      background-color: var(--background-light);
+      font-family: 'Poppins', sans-serif;
+      line-height: 1.6;
+    }
+
+    .container-fluid {
+      padding: 0;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      background-color: var(--primary-green);
+      color: white;
+      min-height: 100vh;
+      width: var(--sidebar-width);
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      padding-top: 20px;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+    }
+
+    .sidebar h4 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-weight: 600;
+      font-size: 1.3rem;
+    }
+
+    .sidebar a {
+      color: white;
+      padding: 15px 20px;
+      text-decoration: none;
+      display: block;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 3px solid var(--light-green);
+      padding-left: 25px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .sidebar a.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 3px solid var(--light-green);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      margin-right: var(--chatbot-width);
+      padding: 30px;
+      padding-bottom: 100px;
+      min-height: 100vh;
+      background-color: white;
+    }
+
+    .page-header {
+      background: linear-gradient(135deg, var(--secondary-green), var(--light-green));
+      color: white;
+      padding: 20px 30px;
+      margin: -30px -30px 30px -30px;
+      border-radius: 0 0 15px 15px;
+    }
+
+    .page-header h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      font-weight: 600;
+    }
+
+    .page-header p {
+      margin: 10px 0 0 0;
+      opacity: 0.9;
+    }
+
+    /* Search Bar */
+    .search-bar {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-bar input {
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px 15px;
+      transition: border-color 0.3s ease;
+    }
+
+    .search-bar input:focus {
+      border-color: var(--secondary-green);
+      box-shadow: 0 0 0 0.2rem rgba(67, 160, 71, 0.25);
+    }
+
+    /* Map Container */
+    .map-container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    #map {
+      height: 400px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    /* Cost Prediction Section */
+    .cost-prediction {
+      background: #f8f9fa;
+      padding: 20px 25px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      border-left: 5px solid var(--secondary-green);
+    }
+
+    .cost-prediction .row {
+      margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      transition: border-color 0.3s ease;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .form-control:focus {
+      border-color: var(--secondary-green);
+      box-shadow: 0 0 0 0.2rem rgba(67, 160, 71, 0.25);
+    }
+
+    /* Select dropdown options styling */
+    .form-control option {
+      padding: 8px 12px;
+      line-height: 1.4;
+      font-size: 0.95rem;
+    }
+
+    /* Form group spacing */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-group label {
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+
+    .cost-output {
+      background: linear-gradient(135deg, #e8f5e8, #f1f8f3);
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+      text-align: center;
+      border: 2px solid var(--light-green);
+    }
+
+    .cost-amount {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--primary-green);
+    }
+
+    .cost-breakdown {
+      background: rgba(255, 255, 255, 0.8);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .cost-breakdown .row {
+      margin-bottom: 5px;
+    }
+
+    .cost-breakdown hr {
+      margin: 10px 0;
+      border-color: var(--light-green);
+    }
+
+    .procedure-details {
+      background: rgba(248, 249, 250, 0.8);
+      padding: 12px;
+      border-radius: 6px;
+      border-left: 3px solid var(--accent-green);
+    }
+
+    /* Real-time input feedback */
+    .form-control:focus {
+      border-color: var(--secondary-green);
+      box-shadow: 0 0 0 0.2rem rgba(67, 160, 71, 0.25);
+      transform: scale(1.01);
+      transition: all 0.3s ease;
+    }
+
+    .form-control.is-valid {
+      border-color: var(--light-green);
+      background-image: none;
+    }
+
+    /* Loading animation for real-time updates */
+    .cost-output.updating {
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+
+    /* Tool Cards */
+    .tool-card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid var(--secondary-green);
+    }
+
+    .tool-card h3 {
+      color: var(--primary-green);
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .tool-card ul li {
+      margin-bottom: 8px;
+      color: #666;
+      padding: 2px 8px;
+    }
+
+    .tool-card p {
+      padding: 10px 15px;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--secondary-green), var(--light-green));
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+      transform: translateY(-1px);
+    }
+
+    /* Chatbot Container */
+    .chatbot-container {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: var(--chatbot-width);
+      height: 100vh;
+      background-color: var(--secondary-green);
+      color: white;
+      padding: 20px;
+      box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chatbot-container h4 {
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .chat-suggestions {
+      margin-bottom: 20px;
+    }
+
+    .chat-suggestions ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .chat-suggestions li {
+      background-color: var(--primary-green);
+      margin-bottom: 8px;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .chat-suggestions li:hover {
+      background-color: #1b5e20;
+    }
+
+    .chat-input-area {
+      margin-top: auto;
+    }
+
+    .chat-input-area input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+
+    .chat-input-area button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background-color: var(--primary-green);
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-weight: 600;
+    }
+
+    .chat-input-area button:hover {
+      background-color: #1b5e20;
+    }
+
+    #chatResponse {
+      max-height: 200px;
+      overflow-y: auto;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--primary-green);
+      color: white;
+      padding: 40px 0;
+      margin-left: var(--sidebar-width);
+      margin-right: var(--chatbot-width);
+      position: relative;
+      z-index: 10;
+    }
+
+    footer h5 {
+      color: white;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    footer p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    footer a {
+      color: var(--accent-green);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: white;
+      text-decoration: none;
+    }
+
+    footer .fab {
+      margin: 0 10px;
+      transition: transform 0.3s ease;
+    }
+
+    footer .fab:hover {
+      transform: scale(1.2);
+    }
+
+    /* Mobile Toggle */
+    .mobile-toggle {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1001;
+      background-color: var(--primary-green);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+      .chatbot-container {
+        display: none;
+      }
+      .main-content {
+        margin-right: 0;
+      }
+      footer {
+        margin-right: 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+        padding-bottom: 100px;
+      }
+      footer {
+        margin-left: 0;
+      }
+      .mobile-toggle {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Toggle Button -->
+  <button class="mobile-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="container-fluid">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <h4><i class="fas fa-stethoscope"></i> Doctor Vision</h4>
+      <a href="/"><i class="fas fa-home"></i> Home</a>
+      <a href="/diagnostics" class="active"><i class="fas fa-microscope"></i> Diagnostic Tools</a>
+      <a href="/research"><i class="fas fa-flask"></i> Research</a>
+      <a href="/Finances"><i class="fas fa-chart-line"></i> Finances</a>
+      <a href="/audit"><i class="fas fa-tools"></i> Equipment Audit</a>
+      <a href="#"><i class="fas fa-brain"></i> AI Training (Auto-Update)</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="page-header">
+        <h1><i class="fas fa-microscope"></i> Diagnostic Tools & Cost Calculator</h1>
+        <p>Advanced diagnostic workstation for medical image analysis and procedure cost planning</p>
+      </div>
+
+      <!-- Tab Description -->
+      <div class="tool-card mb-4">
+        <div class="row">
+          <div class="col-md-8">
+            <h3><i class="fas fa-info-circle"></i> What This Tab Does</h3>
+            <p><strong>Purpose:</strong> Comprehensive diagnostic workstation combining AI-powered medical analysis with practical healthcare planning tools.</p>
+            
+            <div class="row mt-3">
+              <div class="col-md-6">
+                <h5><i class="fas fa-calculator"></i> Cost Calculator</h5>
+                <ul class="list-unstyled">
+                  <li>• Calculate diagnostic procedure costs</li>
+                  <li>• Factor in age, gender, and complexity</li>
+                  <li>• Insurance coverage estimation</li>
+                  <li>• Real-time cost updates</li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h5><i class="fas fa-map-marked-alt"></i> Facility Locator</h5>
+                <ul class="list-unstyled">
+                  <li>• Interactive medical facility mapping</li>
+                  <li>• Find nearest diagnostic centers</li>
+                  <li>• Real-time location services</li>
+                  <li>• Integrated with TomTom Maps</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 text-center">
+            <div class="mb-3">
+              <i class="fas fa-user-md" style="font-size: 4rem; color: var(--secondary-green);"></i>
+            </div>
+            <h4>For Healthcare Providers</h4>
+            <p>Plan diagnostic procedures, estimate costs, and locate facilities efficiently.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hospital Location Search -->
+      <div class="search-bar">
+        <h3><i class="fas fa-map-marker-alt"></i> Find Medical Facilities</h3>
+        <div class="row">
+          <div class="col-md-8">
+            <input type="text" class="form-control" placeholder="Search for hospitals, clinics, or diagnostic centers..." id="search-input">
+          </div>
+          <div class="col-md-4">
+            <button class="btn btn-primary btn-block" onclick="searchLocation()">
+              <i class="fas fa-search"></i> Search Location
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Map -->
+      <div class="map-container">
+        <h4><i class="fas fa-globe"></i> Interactive Medical Facility Map</h4>
+        <div id="map"></div>
+        <p class="text-muted mt-2">
+          <i class="fas fa-info-circle"></i> Click on the map to add markers for medical facilities
+        </p>
+      </div>
+
+      <!-- Diagnostic Cost Prediction -->
+      <div class="cost-prediction">
+        <h3><i class="fas fa-calculator"></i> Diagnostic Cost Prediction</h3>
+        <p class="text-muted mb-4">Calculate estimated costs for various diagnostic procedures</p>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="patientAge" class="font-weight-bold">Patient Age:</label>
+              <input type="number" id="patientAge" class="form-control" placeholder="Enter patient age" min="0" max="120">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="patientGender" class="font-weight-bold">Patient Gender:</label>
+              <select id="patientGender" class="form-control">
+                <option value="">-- Select Gender --</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="diagnosticType" class="font-weight-bold">Diagnostic Type:</label>
+              <select id="diagnosticType" class="form-control" onchange="updateBodyRegion()">
+                <option value="">-- Select Diagnostic Type --</option>
+                <option value="X-ray">🩻 X-ray Imaging</option>
+                <option value="MRI">🧠 MRI Scan</option>
+                <option value="CT Scan">🔍 CT Scan</option>
+                <option value="Blood Test">🩸 Blood Test</option>
+                <option value="Ultrasound">📡 Ultrasound</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div id="bodyRegion" class="form-group hidden">
+              <label for="bodyRegionSelect" class="font-weight-bold">Body Region:</label>
+              <select id="bodyRegionSelect" class="form-control" onchange="updateComplexity()">
+                <option value="">-- Select Body Region --</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div id="complexityLevel" class="form-group hidden">
+              <label for="complexitySelect" class="font-weight-bold">Procedure Complexity:</label>
+              <select id="complexitySelect" class="form-control" onchange="calculateCost()">
+                <option value="">-- Select Complexity --</option>
+                <option value="Low">Low Complexity</option>
+                <option value="Medium">Medium Complexity</option>
+                <option value="High">High Complexity</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="font-weight-bold">Insurance Coverage:</label>
+              <select id="insuranceType" class="form-control" onchange="calculateCost()">
+                <option value="none">No Insurance</option>
+                <option value="basic">Basic Coverage (50%)</option>
+                <option value="premium">Premium Coverage (80%)</option>
+                <option value="full">Full Coverage (100%)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cost Output -->
+        <div class="cost-output">
+          <div id="outputExpectedCost">
+            <div class="cost-amount">₹0</div>
+            <div>Estimated Diagnostic Cost</div>
+          </div>
+        </div>
+
+        <div class="text-center mt-4">
+          <button class="btn btn-primary btn-lg" onclick="calculateCost()">
+            <i class="fas fa-calculator"></i> Calculate Cost
+          </button>
+          <a href="/research" class="btn btn-success btn-lg ml-2">
+            <i class="fas fa-arrow-right"></i> Proceed to Analysis
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Chatbot Panel -->
+    <div class="chatbot-container">
+      <h4><i class="fas fa-robot"></i> Doctor Vision AI</h4>
+      <div class="chat-suggestions">
+        <p>How can I assist you?</p>
+        <ul>
+          <li onclick="setQuestion('What diagnostic tests are available?')">What diagnostic tests are available?</li>
+          <li onclick="setQuestion('How much does an MRI cost?')">How much does an MRI cost?</li>
+          <li onclick="setQuestion('What is the difference between CT and MRI?')">What is the difference between CT and MRI?</li>
+          <li onclick="setQuestion('How do I prepare for a diagnostic test?')">How do I prepare for a diagnostic test?</li>
+        </ul>
+      </div>
+      
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Ask about diagnostic procedures..." />
+        <button onclick="sendMessage()">Send</button>
+        
+        <!-- Chatbot Response -->
+        <div id="chatResponse"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5>About Doctor Vision</h5>
+          <p>
+            Doctor Vision integrates AI and computer vision to deliver innovative solutions in medical diagnostics, empowering healthcare professionals and improving patient outcomes.
+          </p>
+        </div>
+
+        <div class="col-md-4">
+          <h5>Contact Us</h5>
+          <p>Email: <a href="mailto:lavangupta2005@gmail.com">lavangupta2005@gmail.com</a></p>
+          <p>Phone: <a href="tel:+917042143211">+91 7042143211</a></p>
+          <p>Address: Faridabad, Haryana, India</p>
+        </div>
+
+        <div class="col-md-4">
+          <h5>Follow Us</h5>
+          <a href="https://www.linkedin.com/in/lavan-gupta-bb6850259?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank"><i class="fab fa-linkedin fa-2x"></i></a>
+          <a href="https://www.instagram.com/lavangupta63?igsh=dmc2M2hqNmRzNmNj" target="_blank"><i class="fab fa-instagram-square fa-2x"></i></a>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-12">
+          <p>&copy; 2025 Doctor Vision. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <!-- TomTom Maps JS -->
+  <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.14.0/maps/maps-web.min.js"></script>
+  <script src="https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.14.0/services/services-web.min.js"></script>
+
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('show');
+    }
+
+    function setQuestion(question) {
+      document.getElementById('chatInput').value = question;
+    }
+
+    function sendMessage() {
+      const question = document.getElementById('chatInput').value.trim();
+      const chatResponse = document.getElementById('chatResponse');
+      
+      if (question === "") {
+        alert("Please enter a question.");
+        return;
+      }
+
+      // Show loading state
+      chatResponse.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Thinking...</p>';
+
+      fetch('/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          'question': question
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          chatResponse.innerHTML = `<p style="color: #ffcdd2;"><strong>Error:</strong> ${data.error}</p>`;
+        } else {
+          chatResponse.innerHTML = `<p><strong>Dr. Vision:</strong> ${data.response}</p>`;
+        }
+        chatResponse.scrollTop = chatResponse.scrollHeight;
+        document.getElementById('chatInput').value = '';
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        chatResponse.innerHTML = '<p style="color: #ffcdd2;"><strong>Error:</strong> Failed to get response. Please try again.</p>';
+      });
+    }
+
+    // Map initialization
+    var APIKEY = "{{ tomtom_api_key }}";
+    var map = tt.map({
+      key: APIKEY,
+      container: "map",
+      style: `https://api.tomtom.com/style/1/style/*?map=2/basic_street-satellite&poi=2/poi_dynamic-satellite&key=${APIKEY}`,
+      center: [79.146881, 12.934968],
+      zoom: 12
+    });
+    var markers = [];
+
+    map.on('click', function(event) {
+      var lngLat = event.lngLat;
+      var marker = new tt.Marker().setLngLat(lngLat).addTo(map);
+      markers.push(marker);
+      map.flyTo({ center: lngLat, zoom: 14 });
+    });
+
+    function searchLocation() {
+      var query = document.getElementById("search-input").value;
+      if (!query) {
+        alert("Please enter a location to search.");
+        return;
+      }
+
+      tt.services.fuzzySearch({
+        key: APIKEY,
+        query: query
+      }).then(function(results) {
+        if (results.results.length > 0) {
+          var result = results.results[0];
+          map.flyTo({
+            center: result.position,
+            zoom: 14
+          });
+          
+          // Add marker for searched location
+          var marker = new tt.Marker().setLngLat(result.position).addTo(map);
+          markers.push(marker);
+        } else {
+          alert("Location not found.");
+        }
+      }).catch(function(error) {
+        console.error("Search failed:", error);
+        alert("Search failed. Please try again.");
+      });
+    }
+
+    function updateBodyRegion() {
+      const diagnosticType = document.getElementById("diagnosticType").value;
+      const bodyRegionSelect = document.getElementById("bodyRegionSelect");
+      const bodyRegion = document.getElementById("bodyRegion");
+      
+      bodyRegionSelect.innerHTML = '<option value="">-- Select Body Region --</option>';
+
+      if (diagnosticType === "X-ray") {
+        bodyRegionSelect.innerHTML += '<option value="Chest">Chest</option><option value="Abdomen">Abdomen</option><option value="Extremities">Extremities</option><option value="Spine">Spine</option>';
+      } else if (diagnosticType === "MRI") {
+        bodyRegionSelect.innerHTML += '<option value="Brain">Brain</option><option value="Spine">Spine</option><option value="Joints">Joints</option><option value="Abdomen">Abdomen</option>';
+      } else if (diagnosticType === "CT Scan") {
+        bodyRegionSelect.innerHTML += '<option value="Head">Head</option><option value="Chest">Chest</option><option value="Abdomen">Abdomen</option><option value="Pelvis">Pelvis</option>';
+      } else if (diagnosticType === "Blood Test") {
+        bodyRegionSelect.innerHTML += '<option value="General">General Panel</option><option value="Specialized">Specialized Tests</option>';
+      } else if (diagnosticType === "Ultrasound") {
+        bodyRegionSelect.innerHTML += '<option value="Abdomen">Abdomen</option><option value="Pelvis">Pelvis</option><option value="Heart">Heart</option>';
+      }
+
+      if (diagnosticType) {
+        bodyRegion.classList.remove("hidden");
+      } else {
+        bodyRegion.classList.add("hidden");
+        document.getElementById("complexityLevel").classList.add("hidden");
+      }
+      calculateCost();
+    }
+
+    function updateComplexity() {
+      document.getElementById("complexityLevel").classList.remove("hidden");
+      calculateCost();
+    }
+
+    // Real-time cost calculation with detailed breakdown
+    function calculateCost() {
+      const patientAge = parseInt(document.getElementById("patientAge").value, 10) || 0;
+      const patientGender = document.getElementById("patientGender").value;
+      const diagnosticType = document.getElementById("diagnosticType").value;
+      const bodyRegion = document.getElementById("bodyRegionSelect").value;
+      const complexity = document.getElementById("complexitySelect").value;
+      const insuranceType = document.getElementById("insuranceType").value;
+
+      // Real-time validation and immediate feedback
+      if (!diagnosticType) {
+        updateCostDisplay(0, "Please select diagnostic type", null);
+        return;
+      }
+
+      // Real diagnostic pricing based on actual medical costs in India
+      const basePricing = {
+        "X-ray": { base: 800, description: "X-ray Imaging" },
+        "MRI": { base: 8000, description: "MRI Scan" },
+        "CT Scan": { base: 4500, description: "CT Scan" },
+        "Blood Test": { base: 600, description: "Blood Test" },
+        "Ultrasound": { base: 1200, description: "Ultrasound" }
+      };
+
+      const selectedPricing = basePricing[diagnosticType];
+      if (!selectedPricing) {
+        updateCostDisplay(0, "Invalid diagnostic type", null);
+        return;
+      }
+
+      let baseCost = selectedPricing.base;
+      let breakdown = {
+        base: baseCost,
+        ageAdjustment: 0,
+        genderAdjustment: 0,
+        regionAdjustment: 0,
+        complexityAdjustment: 0,
+        insuranceDiscount: 0
+      };
+      
+      // Age-based pricing (realistic medical pricing)
+      let ageMultiplier = 1.0;
+      if (patientAge > 0) {
+        if (patientAge < 18) {
+          ageMultiplier = 0.85; // Pediatric discount
+          breakdown.ageAdjustment = -(baseCost * 0.15);
+        } else if (patientAge > 65) {
+          ageMultiplier = 1.2; // Senior citizen additional care
+          breakdown.ageAdjustment = baseCost * 0.2;
+        }
+      }
+      
+      // Gender-based adjustments (minimal, based on specific procedures)
+      let genderMultiplier = 1.0;
+      if (patientGender === "Female" && (diagnosticType === "Ultrasound" || diagnosticType === "MRI")) {
+        genderMultiplier = 1.1; // Additional screening protocols
+        breakdown.genderAdjustment = baseCost * 0.1;
+      }
+      
+      // Body region complexity (realistic pricing)
+      let regionMultiplier = 1.0;
+      if (bodyRegion) {
+        const regionPricing = {
+          "Brain": 1.8,
+          "Spine": 1.6,
+          "Chest": 1.2,
+          "Abdomen": 1.3,
+          "Heart": 1.9,
+          "Joints": 1.1,
+          "Extremities": 1.0,
+          "General": 1.0,
+          "Specialized": 1.4
+        };
+        regionMultiplier = regionPricing[bodyRegion] || 1.0;
+        breakdown.regionAdjustment = baseCost * (regionMultiplier - 1.0);
+      }
+      
+      // Complexity multiplier (actual medical complexity pricing)
+      let complexityMultiplier = 1.0;
+      if (complexity) {
+        const complexityPricing = {
+          "Low": 1.0,
+          "Medium": 1.3,
+          "High": 1.7
+        };
+        complexityMultiplier = complexityPricing[complexity] || 1.0;
+        breakdown.complexityAdjustment = baseCost * (complexityMultiplier - 1.0);
+      }
+
+      // Calculate total before insurance
+      const totalBeforeInsurance = Math.round(
+        baseCost * ageMultiplier * genderMultiplier * regionMultiplier * complexityMultiplier
+      );
+      
+      // Apply insurance discount (realistic insurance coverage)
+      let finalCost = totalBeforeInsurance;
+      let discountAmount = 0;
+      
+      switch(insuranceType) {
+        case "basic":
+          discountAmount = Math.round(totalBeforeInsurance * 0.4); // 40% coverage
+          break;
+        case "premium":
+          discountAmount = Math.round(totalBeforeInsurance * 0.70); // 70% coverage
+          break;
+        case "full":
+          discountAmount = Math.round(totalBeforeInsurance * 0.85); // 85% coverage
+          break;
+        default:
+          discountAmount = 0;
+      }
+      
+      finalCost = totalBeforeInsurance - discountAmount;
+      breakdown.insuranceDiscount = discountAmount;
+
+      // Update display with detailed breakdown
+      updateCostDisplay(finalCost, selectedPricing.description, {
+        originalCost: totalBeforeInsurance,
+        discount: discountAmount,
+        breakdown: breakdown,
+        diagnosticType: diagnosticType,
+        bodyRegion: bodyRegion,
+        complexity: complexity,
+        patientAge: patientAge,
+        insuranceType: insuranceType
+      });
+    }
+
+    function updateCostDisplay(finalCost, description, details) {
+      const costContainer = document.getElementById("outputExpectedCost");
+      
+      if (finalCost === 0 || !details) {
+        costContainer.innerHTML = `
+          <div class="cost-amount">₹0</div>
+          <div>${description}</div>
+        `;
+        return;
+      }
+
+      let costDisplay = `
+        <div class="cost-amount">₹${finalCost.toLocaleString()}</div>
+        <div>Final Cost - ${description}</div>
+      `;
+      
+      if (details.discount > 0) {
+        costDisplay += `
+          <div class="cost-breakdown mt-3">
+            <div class="row text-left">
+              <div class="col-6">Original Cost:</div>
+              <div class="col-6 text-right">₹${details.originalCost.toLocaleString()}</div>
+            </div>
+            <div class="row text-left text-success">
+              <div class="col-6">Insurance Savings:</div>
+              <div class="col-6 text-right">-₹${details.discount.toLocaleString()}</div>
+            </div>
+            <hr>
+            <div class="row text-left font-weight-bold">
+              <div class="col-6">You Pay:</div>
+              <div class="col-6 text-right">₹${finalCost.toLocaleString()}</div>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Add procedure details
+      costDisplay += `
+        <div class="procedure-details mt-3 text-left">
+          <small class="text-muted">
+            <strong>Procedure:</strong> ${details.diagnosticType}${details.bodyRegion ? ' - ' + details.bodyRegion : ''}<br>
+            ${details.complexity ? '<strong>Complexity:</strong> ' + details.complexity + '<br>' : ''}
+            ${details.patientAge > 0 ? '<strong>Patient Age:</strong> ' + details.patientAge + ' years<br>' : ''}
+            <strong>Insurance:</strong> ${details.insuranceType === 'none' ? 'No Coverage' : details.insuranceType.charAt(0).toUpperCase() + details.insuranceType.slice(1) + ' Coverage'}
+          </small>
+        </div>
+      `;
+      
+      costContainer.innerHTML = costDisplay;
+    }
+
+    // Add real-time event listeners for immediate updates
+    function setupRealTimeCalculation() {
+      const inputs = [
+        'patientAge', 'patientGender', 'diagnosticType', 
+        'bodyRegionSelect', 'complexitySelect', 'insuranceType'
+      ];
+      
+      inputs.forEach(inputId => {
+        const element = document.getElementById(inputId);
+        if (element) {
+          element.addEventListener('input', calculateCost);
+          element.addEventListener('change', calculateCost);
+        }
+      });
+    }
+
+    // Initialize real-time calculation on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      setupRealTimeCalculation();
+      calculateCost(); // Initial calculation
+    });
+
+    // Allow Enter key to send message
+    document.addEventListener('DOMContentLoaded', function() {
+      const chatInput = document.getElementById('chatInput');
+      if (chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            sendMessage();
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

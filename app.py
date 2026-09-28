@@ -1,196 +1,387 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from inference_sdk import InferenceHTTPClient
-import os
+from werkzeug.utils import secure_filename
 from groq import Groq
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+import os
+import logging
+
+
+# ============================================================
+# Configuration
+# ============================================================
+
 load_dotenv()
 
-# Initialize the Flask application
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# Configure upload folder
-UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Required application secret
+app.secret_key = os.environ["SECRET_KEY"]
 
-# Get API keys from environment variables
-ROBOFLOW_API_KEY = os.getenv('ROBOFLOW_API_KEY')
-GROQ_API_KEY = os.getenv('GROQ_API_KEY')
-TOMTOM_API_KEY = os.getenv('TOMTOM_API_KEY')
+# Upload configuration
+UPLOAD_FOLDER = "uploads"
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
 
-# Validate API keys
-if not ROBOFLOW_API_KEY:
-    raise ValueError("ROBOFLOW_API_KEY environment variable is required")
-if not GROQ_API_KEY:
-    raise ValueError("GROQ_API_KEY environment variable is required")
-if not TOMTOM_API_KEY:
-    raise ValueError("TOMTOM_API_KEY environment variable is required")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Initialize the Roboflow client
+
+# ============================================================
+# Environment Variables
+# ============================================================
+
+ROBOFLOW_API_KEY = os.environ["ROBOFLOW_API_KEY"]
+GROQ_API_KEY = os.environ["GROQ_API_KEY"]
+TOMTOM_API_KEY = os.environ["TOMTOM_API_KEY"]
+
+# Keep the model configurable from the environment.
+# Current replacement for deprecated llama-3.1-8b-instant.
+GROQ_MODEL = os.getenv(
+    "GROQ_MODEL",
+    "openai/gpt-oss-20b"
+)
+
+
+# ============================================================
+# Logging
+# ============================================================
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+# ============================================================
+# API Clients
+# ============================================================
+
+# Roboflow
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
     api_key=ROBOFLOW_API_KEY
 )
 
-# Initialize the Groq client
-client = Groq(api_key=GROQ_API_KEY)
+# Groq
+groq_client = Groq(
+    api_key=GROQ_API_KEY
+)
+
+
+# ============================================================
+# Chatbot
+# ============================================================
 
 def validate_question(question):
-    """Validate if the question is appropriate for a medical AI assistant."""
-    if not question or len(question.strip()) == 0:
-        return False
-    return True
+    """
+    Basic validation for chatbot input.
+    """
+    return bool(question and question.strip())
+
 
 def query_groq(question):
-    """Query Groq Llama3-8b for a medical response."""
-    try:
-        # Validate if the question is appropriate
-        if not validate_question(question):
-            return "Please provide a valid medical question."
-            
-        # Add specific instructions in the system prompt
-        messages = [
-            {
-                "role": "system",
-                "content": "You are Doctor Vision, an AI medical assistant. Provide helpful, accurate medical information while emphasizing that users should consult healthcare professionals for serious concerns. Keep responses concise and professional."
-            },
-            {
-                "role": "user",
-                "content": question
-            }
-        ]
+    """
+    Send the user's question to the Groq LLM.
 
-        # Create a chat completion with Groq API
-        chat_completion = client.chat.completions.create(
+    Returns:
+        tuple:
+            (response, None) on success
+            (None, error_message) on failure
+    """
+
+    if not validate_question(question):
+        return None, "Please provide a valid medical question."
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are Doctor Vision, an AI medical information assistant. "
+                "Provide helpful and accurate general medical information. "
+                "Do not claim to be a licensed physician or provide definitive "
+                "diagnoses. For serious, emergency, or worsening symptoms, "
+                "advise the user to seek appropriate professional medical care. "
+                "Keep responses concise and professional."
+            )
+        },
+        {
+            "role": "user",
+            "content": question
+        }
+    ]
+
+    try:
+        chat_completion = groq_client.chat.completions.create(
             messages=messages,
-            model="llama-3.1-8b-instant",
+            model=GROQ_MODEL,
             max_tokens=500,
             temperature=0.7
         )
 
-        # Return the generated response
-        return chat_completion.choices[0].message.content
-        
-    except Exception as e:
-        print(f"Groq API Error: {e}")
-        return "I'm experiencing technical difficulties. Please try again later."
+        response = chat_completion.choices[0].message.content
 
-# Main routes
-@app.route('/')
+        if not response:
+            return None, "The chatbot returned an empty response."
+
+        return response, None
+
+    except Exception:
+        logger.exception("Groq API request failed")
+        return None, "The chatbot service is temporarily unavailable."
+
+
+# ============================================================
+# Main Routes
+# ============================================================
+
+@app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template("index.html")
 
-@app.route('/diagnostics')
+
+@app.route("/diagnostics")
 def diagnostics():
-    return render_template('project.html', tomtom_api_key=TOMTOM_API_KEY)
+    return render_template(
+        "project.html",
+        tomtom_api_key=TOMTOM_API_KEY
+    )
 
-@app.route('/research')
+
+@app.route("/research")
 def research():
-    return render_template('bids.html')
+    return render_template("bids.html")
 
-@app.route('/Finances')
+
+@app.route("/Finances")
 def finances():
-    return render_template('Finances.html')
+    return render_template("Finances.html")
 
-@app.route('/audit')
+
+@app.route("/audit")
 def audit():
-    return render_template('Audit.html')
+    return render_template("Audit.html")
 
-# Image upload and analysis endpoint
-@app.route('/upload', methods=['POST'])
+@app.route("/training")
+def training():
+    return render_template("training.html")
+
+
+# ============================================================
+# Image Upload / Disease Analysis
+# ============================================================
+
+@app.route("/upload", methods=["POST"])
 def analyze_image():
+
+    upload_path = None
+
     try:
-        if 'file' not in request.files:
-            return render_template('bids.html', error="No file uploaded"), 400
+        # Check file
+        if "file" not in request.files:
+            return render_template(
+                "bids.html",
+                error="No file uploaded"
+            ), 400
 
-        file = request.files['file']
-        if file.filename == '':
-            return render_template('bids.html', error="No file selected"), 400
+        file = request.files["file"]
 
-        # Get the disease type from form data
-        selected_disease = request.form.get('disease', '')
+        if file.filename == "":
+            return render_template(
+                "bids.html",
+                error="No file selected"
+            ), 400
+
+        # Get disease type
+        selected_disease = request.form.get("disease", "").strip()
+
         if not selected_disease:
-            return render_template('bids.html', error="No disease type selected"), 400
+            return render_template(
+                "bids.html",
+                error="No disease type selected"
+            ), 400
 
-        # Save the uploaded file
-        filename = file.filename
-        upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        # Secure filename
+        filename = secure_filename(file.filename)
+
+        if not filename:
+            return render_template(
+                "bids.html",
+                error="Invalid filename"
+            ), 400
+
+        # Save uploaded file
+        upload_path = os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            filename
+        )
+
         file.save(upload_path)
 
-        # Define model IDs for different diseases
+        # Supported disease models
         model_ids = {
             "brain_tumor": "brain_tumour_detection-p4qam/1",
             "tb": "tb-chemm/1",
             "pneumonia": "pneumonia-kefdw/1"
         }
 
-        # Get the corresponding model ID
         model_id = model_ids.get(selected_disease)
+
         if not model_id:
-            return render_template('bids.html', error="Invalid disease type selected"), 400
+            return render_template(
+                "bids.html",
+                error="Invalid disease type selected"
+            ), 400
 
-        # Perform inference on the uploaded file
-        result = CLIENT.infer(upload_path, model_id=model_id)
+        # Run Roboflow inference
+        result = CLIENT.infer(
+            upload_path,
+            model_id=model_id
+        )
 
-        # Extract relevant data from the result
-        predictions = result.get("predictions", [])
-        
-        # Clean up the uploaded file
-        try:
-            os.remove(upload_path)
-        except:
-            pass
-            
-        return render_template('bids.html', predictions=predictions, selected_disease=selected_disease)
+        predictions = result.get(
+            "predictions",
+            []
+        )
 
-    except Exception as e:
-        print(f"Upload/Analysis Error: {e}")
-        return render_template('bids.html', error=f"Analysis failed: {str(e)}"), 500
+        return render_template(
+            "bids.html",
+            predictions=predictions,
+            selected_disease=selected_disease
+        )
 
-# Chatbot API Endpoint
-@app.route('/ask', methods=['POST'])
+    except Exception:
+        logger.exception("Upload/Analysis Error")
+
+        return render_template(
+            "bids.html",
+            error="Analysis failed. Please try again."
+        ), 500
+
+    finally:
+        # Always remove uploaded file
+        if upload_path and os.path.exists(upload_path):
+            try:
+                os.remove(upload_path)
+            except OSError:
+                logger.warning(
+                    "Could not remove uploaded file: %s",
+                    upload_path
+                )
+
+
+# ============================================================
+# Chatbot API
+# ============================================================
+
+@app.route("/ask", methods=["POST"])
 def ask():
+
     try:
-        # Get question from form data
-        user_question = request.form.get('question', '').strip()
-        
+        user_question = request.form.get(
+            "question",
+            ""
+        ).strip()
+
         if not user_question:
-            return jsonify({"error": "No question provided"}), 400
-            
-        # Get response from Groq
-        response = query_groq(user_question)
-        
-        return jsonify({"response": response}), 200
-        
-    except Exception as e:
-        print(f"Chatbot Error: {e}")
-        return jsonify({"error": "Sorry, there was an error processing your request. Please try again."}), 500
+            return jsonify({
+                "error": "No question provided"
+            }), 400
 
-# Static file serving for uploads
-@app.route('/uploads/<filename>')
+        response, error = query_groq(
+            user_question
+        )
+
+        if error:
+            return jsonify({
+                "error": error
+            }), 503
+
+        return jsonify({
+            "response": response
+        }), 200
+
+    except Exception:
+        logger.exception("Chatbot Error")
+
+        return jsonify({
+            "error": (
+                "Sorry, there was an error "
+                "processing your request."
+            )
+        }), 500
+
+
+# ============================================================
+# Uploaded Files
+# ============================================================
+
+@app.route("/uploads/<filename>")
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    return send_from_directory(
+        app.config["UPLOAD_FOLDER"],
+        filename
+    )
 
-# Error handlers
+
+# ============================================================
+# Error Handlers
+# ============================================================
+
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('index.html'), 404
+    return render_template(
+        "index.html"
+    ), 404
+
 
 @app.errorhandler(500)
 def internal_server_error(e):
-    return render_template('index.html'), 500
+    return render_template(
+        "index.html"
+    ), 500
 
-# Run the Flask Application
+
+@app.errorhandler(413)
+def request_entity_too_large(e):
+    return render_template(
+        "bids.html",
+        error="File is too large. Maximum size is 10 MB."
+    ), 413
+
+
+# ============================================================
+# Run Application
+# ============================================================
+
 if __name__ == "__main__":
-    # Get configuration from environment variables
-    # Render requires binding to 0.0.0.0 and uses PORT environment variable (default 10000)
-    host = os.getenv('HOST', '0.0.0.0')
-    port = int(os.getenv('PORT', 10000))  # Render's default port
-    debug = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-    
-    print(f"Starting Flask app on {host}:{port} (debug={debug})")
-    app.run(debug=debug, host=host, port=port)
+
+    host = os.getenv(
+        "HOST",
+        "0.0.0.0"
+    )
+
+    port = int(
+        os.getenv(
+            "PORT",
+            10000
+        )
+    )
+
+    debug = (
+        os.getenv(
+            "FLASK_DEBUG",
+            "False"
+        ).lower() == "true"
+    )
+
+    logger.info(
+        "Starting Flask app on %s:%s (debug=%s)",
+        host,
+        port,
+        debug
+    )
+
+    app.run(
+        debug=debug,
+        host=host,
+        port=port
+    )

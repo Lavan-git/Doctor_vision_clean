@@ -6,6 +6,8 @@
   <title>Finance Dashboard - Project Name</title>
   <!-- Bootstrap CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary-green: #2e7d32;
@@ -14,7 +16,7 @@
       --accent-green: #81c784;
       --background-light: #f0f9f4;
       --sidebar-width: 250px;
-      --chatbot-width: 300px;
+      
     }
 
     * {
@@ -81,7 +83,7 @@
     /* Main Content */
     .main-content {
       margin-left: var(--sidebar-width);
-      margin-right: var(--chatbot-width);
+
       padding: 30px;
       padding-bottom: 100px;
       min-height: 100vh;
@@ -135,92 +137,7 @@
       transform: translateY(-1px);
     }
 
-    /* Chatbot Container */
-    .chatbot-container {
-      position: fixed;
-      right: 0;
-      top: 0;
-      width: var(--chatbot-width);
-      height: 100vh;
-      background-color: var(--secondary-green);
-      color: white;
-      padding: 20px;
-      box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
-      z-index: 1000;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .chatbot-container h4 {
-      font-size: 1.4rem;
-      margin-bottom: 20px;
-      text-align: center;
-      font-weight: 600;
-    }
-
-    .chat-suggestions {
-      margin-bottom: 20px;
-    }
-
-    .chat-suggestions ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .chat-suggestions li {
-      background-color: var(--primary-green);
-      margin-bottom: 8px;
-      padding: 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      font-size: 0.9rem;
-    }
-
-    .chat-suggestions li:hover {
-      background-color: #1b5e20;
-    }
-
-    .chat-input-area {
-      margin-top: auto;
-    }
-
-    .chat-input-area input {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      font-size: 0.9rem;
-    }
-
-    .chat-input-area button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      background-color: var(--primary-green);
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      font-weight: 600;
-    }
-
-    .chat-input-area button:hover {
-      background-color: #1b5e20;
-    }
-
-    #chatResponse {
-      max-height: 200px;
-      overflow-y: auto;
-      background-color: rgba(255, 255, 255, 0.1);
-      padding: 15px;
-      border-radius: 8px;
-      margin: 15px 0;
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
+    
 
     /* Footer */
     footer {
@@ -228,7 +145,6 @@
       color: white;
       padding: 40px 0;
       margin-left: var(--sidebar-width);
-      margin-right: var(--chatbot-width);
       position: relative;
       z-index: 10;
     }
@@ -282,9 +198,6 @@
 
     /* Responsive Design */
     @media (max-width: 1200px) {
-      .chatbot-container {
-        display: none;
-      }
       .main-content {
         margin-right: 0;
       }
@@ -344,7 +257,7 @@
       <a href="/research"><i class="fas fa-flask"></i> Research</a>
       <a href="/Finances" class="active"><i class="fas fa-chart-line"></i> Finances</a>
       <a href="/audit"><i class="fas fa-tools"></i> Equipment Audit</a>
-      <a href="#"><i class="fas fa-graduation-cap"></i> Training</a>
+      <a href="/training"><i class="fas fa-graduation-cap"></i> Training</a>
     </nav>
 
     <!-- Main Content -->
@@ -497,29 +410,9 @@
           </div>
         </div>
       </div>
-    </main>
-
-    <!-- Chatbot Panel -->
-    <div class="chatbot-container">
-      <h4><i class="fas fa-robot"></i> Doctor Vision AI</h4>
-      <div class="chat-suggestions">
-        <p>How can I assist you?</p>
-        <ul>
-          <li onclick="setQuestion('What are the current financial trends?')">What are the current financial trends?</li>
-          <li onclick="setQuestion('How can I reduce diagnostic costs?')">How can I reduce diagnostic costs?</li>
-          <li onclick="setQuestion('What is the revenue breakdown?')">What is the revenue breakdown?</li>
-          <li onclick="setQuestion('Show me the profit margins')">Show me the profit margins</li>
-        </ul>
-      </div>
+    </main>  
       
-      <div class="chat-input-area">
-        <input type="text" id="chatInput" placeholder="Ask about finances..." />
-        <button onclick="sendMessage()">Send</button>
-        
-        <!-- Chatbot Response -->
-        <div id="chatResponse"></div>
-      </div>
-    </div>
+      
   </div>
 
   <footer>
@@ -548,7 +441,7 @@
   
       <div class="row mt-3">
         <div class="col-12">
-          <p>&copy; 2025 Doctor Vision. All rights reserved.</p>
+          <p>&copy; 2026 Doctor Vision. All rights reserved.</p>
         </div>
       </div>
     </div>
@@ -565,14 +458,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
-    function setQuestion(question) {
-      document.getElementById('chatInput').value = question;
-    }
-
-    $(document).ready(function() {
-      $("#footer-placeholder").load("footer.html");
-    });
-
     // Fund Utilisation Chart
     var fundUtilisationCtx = document.getElementById('fundUtilisationChart').getContext('2d');
     var fundUtilisationChart = new Chart(fundUtilisationCtx, {
@@ -628,56 +513,13 @@
       sidebar.classList.toggle('show');
     }
 
-    // Handle Chatbot
-    function sendMessage() {
-      let question = document.getElementById('chatInput').value;
-      if (question === "") {
-        alert("Please enter a question.");
-        return;
-      }
-
-      // Show loading indicator
-      document.getElementById('chatResponse').innerHTML = `
-        <div class="text-center">
-          <i class="fas fa-spinner fa-spin"></i> Thinking...
-        </div>
-      `;
-
-      fetch('/ask', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          'question': question
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('chatResponse').innerHTML = `
-          <p><strong>Q:</strong> ${question}</p>
-          <p><strong>A:</strong> ${data.response}</p>
-        `;
-        document.getElementById('chatInput').value = '';
-        const chatResponseDiv = document.getElementById('chatResponse');
-        chatResponseDiv.scrollTop = chatResponseDiv.scrollHeight;
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('chatResponse').innerHTML = `
-          <p style="color: #ff6b6b;"><strong>Error:</strong> Unable to get response. Please try again.</p>
-        `;
-      });
-    }
-
-    // Allow Enter key to send message
-    document.getElementById('chatInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        sendMessage();
-      }
-    });
+    
 
   </script>
+{% include 'chatbot.html' %}
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{{ url_for('static', filename='chatbot.js') }}"></script>
 
 </body>
 </html>

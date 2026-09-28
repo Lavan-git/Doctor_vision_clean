@@ -1,0 +1,49 @@
+<!-- Doctor Vision Chatbot
+     Include this once near the end of <body> in each page.
+     Set data-suggestions on #doctorVisionChatbot if you want page-specific prompts.
+-->
+<div id="doctorVisionChatbot" class="dv-chatbot">
+    <button id="dvChatbotLauncher" class="dv-chatbot-launcher" type="button"
+            aria-label="Open Doctor Vision AI">
+        <span class="dv-launcher-icon">🩺</span>
+    </button>
+
+    <section id="dvChatbotWindow" class="dv-chatbot-window" aria-label="Doctor Vision AI">
+        <header class="dv-chatbot-header">
+            <div class="dv-chatbot-title">
+                <div class="dv-chatbot-avatar">🩺</div>
+                <div>
+                    <strong>Doctor Vision AI</strong>
+                    <small>Medical information assistant</small>
+                </div>
+            </div>
+            <button id="dvChatbotClose" class="dv-chatbot-close" type="button"
+                    aria-label="Close chatbot">&times;</button>
+        </header>
+
+        <div id="dvChatMessages" class="dv-chat-messages">
+            <div class="dv-chat-message dv-ai-message">
+                <div class="dv-message-label">Dr. Vision</div>
+                <div class="dv-message-content">
+                    Hello! How can I help you today?
+                </div>
+            </div>
+        </div>
+
+        <div id="dvChatSuggestions" class="dv-chat-suggestions"></div>
+
+        <form id="dvChatForm" class="dv-chat-input-area">
+            <textarea id="dvChatInput"
+                      rows="1"
+                      placeholder="Ask Doctor Vision..."
+                      aria-label="Chat message"></textarea>
+            <button type="submit" id="dvSendButton" aria-label="Send message">
+                <span>➤</span>
+            </button>
+        </form>
+
+        <div class="dv-chat-disclaimer">
+            AI-generated information is not a substitute for professional medical advice.
+        </div>
+    </section>
+</div>

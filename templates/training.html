@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Training & Model Development - Doctor Vision</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+        :root {
+            --primary-green: #1b5e20;
+            --secondary-green: #2e7d32;
+            --accent-green: #43a047;
+            --light-green: #e8f5e9;
+            --dark-text: #263238;
+            --light-text: #607d8b;
+            --border: #e0e0e0;
+            --background: #f5f7f6;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: var(--background);
+            color: var(--dark-text);
+        }
+
+        /* =========================
+           SIDEBAR
+        ========================== */
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100vh;
+            background: var(--primary-green);
+            color: white;
+            padding: 25px 15px;
+            z-index: 1000;
+            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .sidebar h4 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .sidebar a {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 13px 15px;
+            margin-bottom: 7px;
+            border-radius: 8px;
+            transition: 0.25s ease;
+            font-size: 14px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .sidebar i {
+            width: 25px;
+            margin-right: 8px;
+        }
+
+        /* =========================
+           MAIN
+        ========================== */
+
+        .main-content {
+            margin-left: 250px;
+            padding: 35px;
+            min-height: 100vh;
+        }
+
+        .hero {
+            background: linear-gradient(
+                135deg,
+                var(--primary-green),
+                var(--secondary-green)
+            );
+            color: white;
+            border-radius: 16px;
+            padding: 45px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(27, 94, 32, 0.15);
+        }
+
+        .hero h1 {
+            font-size: 2.3rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            margin: 0;
+            max-width: 900px;
+            line-height: 1.8;
+            opacity: 0.94;
+        }
+
+        .card-section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 10px;
+            background: var(--light-green);
+            color: var(--secondary-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 14px;
+            font-size: 19px;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 600;
+        }
+
+        .card-section p {
+            color: #546e7a;
+            line-height: 1.8;
+        }
+
+        /* =========================
+           PROCESS
+        ========================== */
+
+        .process {
+            position: relative;
+        }
+
+        .process-step {
+            display: flex;
+            position: relative;
+            padding-bottom: 28px;
+        }
+
+        .process-step:last-child {
+            padding-bottom: 0;
+        }
+
+        .step-number {
+            width: 42px;
+            min-width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--secondary-green);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 18px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .process-step:not(:last-child) .step-number::after {
+            content: "";
+            position: absolute;
+            top: 42px;
+            left: 20px;
+            width: 2px;
+            height: calc(100% + 28px);
+            background: #c8e6c9;
+            z-index: -1;
+        }
+
+        .step-content h5 {
+            margin: 3px 0 7px;
+            font-weight: 600;
+        }
+
+        .step-content p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* =========================
+           MODEL TABLE
+        ========================== */
+
+        .model-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .model-table th {
+            background: var(--primary-green);
+            color: white;
+            padding: 14px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .model-table td {
+            padding: 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .model-table tr:hover td {
+            background: #f8fbf8;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: var(--light-green);
+            color: var(--secondary-green);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .selected-model {
+            background: #f1f8f2 !important;
+        }
+
+        /* =========================
+           ACCURACY
+        ========================== */
+
+        .accuracy-box {
+            background: linear-gradient(
+                135deg,
+                #e8f5e9,
+                #f4fbf4
+            );
+            border: 1px solid #c8e6c9;
+            border-radius: 14px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .accuracy-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 5px;
+        }
+
+        .accuracy-label {
+            font-size: 14px;
+            color: var(--light-text);
+        }
+
+        .accuracy-note {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #607d8b;
+        }
+
+        /* =========================
+           METRICS
+        ========================== */
+
+        .metric-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            text-align: center;
+            height: 100%;
+        }
+
+        .metric-card i {
+            color: var(--secondary-green);
+            font-size: 25px;
+            margin-bottom: 12px;
+        }
+
+        .metric-card h5 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .metric-card p {
+            font-size: 12px;
+            margin: 0;
+        }
+
+        /* =========================
+           VALIDATION
+        ========================== */
+
+        .validation-box {
+            background: #f8fbf8;
+            border-left: 5px solid var(--secondary-green);
+            padding: 22px;
+            border-radius: 8px;
+        }
+
+        .validation-box h5 {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .validation-box p {
+            margin: 0;
+        }
+
+        /* =========================
+           DISCLAIMER
+        ========================== */
+
+        .disclaimer {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .disclaimer i {
+            color: #f9a825;
+            margin-right: 8px;
+        }
+
+        .disclaimer p {
+            margin: 0;
+            font-size: 13px;
+            color: #6d5a19;
+            line-height: 1.7;
+        }
+
+        /* =========================
+           FOOTER
+        ========================== */
+
+        footer {
+    margin-left: 250px;
+    background: #1b5e20;
+    color: white;
+    padding: 35px;
+    border-top: 3px solid #43a047;
+}
+
+footer h5 {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+footer p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+footer a {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: white;
+    text-decoration: none;
+}
+
+        /* =========================
+           MOBILE
+        ========================== */
+
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1100;
+            border: none;
+            background: var(--primary-green);
+            color: white;
+            padding: 10px 13px;
+            border-radius: 7px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+                padding-top: 70px;
+            }
+
+            footer {
+                margin-left: 0;
+            }
+
+            .hero {
+                padding: 30px 22px;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .model-table {
+                font-size: 12px;
+            }
+
+            .model-table th,
+            .model-table td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- =========================
+     MOBILE MENU
+========================== -->
+
+<button class="mobile-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+</button>
+
+
+<!-- =========================
+     SIDEBAR
+========================== -->
+
+<nav class="sidebar" id="sidebar">
+
+    <h4>
+        <i class="fas fa-stethoscope"></i>
+        Doctor Vision
+    </h4>
+
+    <a href="/">
+        <i class="fas fa-home"></i>
+        Home
+    </a>
+
+    <a href="/diagnostics">
+        <i class="fas fa-microscope"></i>
+        Diagnostic Tools
+    </a>
+
+    <a href="/research">
+        <i class="fas fa-flask"></i>
+        Research
+    </a>
+
+    <a href="/Finances">
+        <i class="fas fa-chart-line"></i>
+        Finances
+    </a>
+
+    <a href="/audit">
+        <i class="fas fa-tools"></i>
+        Equipment Audit
+    </a>
+
+    <a href="/training" class="active">
+        <i class="fas fa-graduation-cap"></i>
+        Training
+    </a>
+
+</nav>
+
+
+<!-- =========================
+     MAIN CONTENT
+========================== -->
+
+<main class="main-content">
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <h1>
+            <i class="fas fa-brain"></i>
+            Model Training & Development
+        </h1>
+
+        <p>
+            Doctor Vision was developed using deep learning and computer
+            vision techniques for automated medical image analysis.
+            Multiple convolutional neural network architectures were
+            evaluated during development before selecting the model used
+            in the final diagnostic workflow.
+        </p>
+
+    </section>
+
+
+    <!-- TRAINING PIPELINE -->
+
+    <section class="card-section">
+
+        <div class="section-heading">
+
+            <div class="section-icon">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+
+            <h2>
+                Model Development Pipeline
+            </h2>
+
+        </div>
+
+        <p>
+            The development process follows a structured machine learning
+            workflow, beginning with medical image preparation and
+            preprocessing, followed by architecture evaluation, training,
+            validation and final model selection.
+        </p>
+
+
+        <div class="process mt-4">
+
+            <div class="process-step">
+
+                <div class="step-number">
+                    1
+                </div>
+
+                <div class="step-content">
+
+                    <h5>
+                        Dataset Preparation
+                    </h5>
+
+                    <p>
+                        Medical imaging data was organized into appropriate
+                        categories and dataset partitions for model
+                        development and evaluation.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="process-step">
+
+                <div class="step-number">
+                    2
+                </div>
+
+                <div class="step-content">
+
+                    <h5>
+                        Image Preprocessing
+                    </h5>
+
+                    <p>
+                        Images were standardized before being provided to
+                        the neural networks. Image dimensions and pixel
+                        values were normalized to provide consistent model
+                        inputs.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="process-step">
+
+                <div class="step-number">
+                    3
+                </div>
+
+                <div class="step-content">
+
+                    <h5>
+                        Architecture Evaluation
+                    </h5>
+
+                    <p>
+                        Several established convolutional neural network
+                        architectures were implemented and evaluated,
+                        including VGG16, DenseNet, ResNet, Inception,
+                        EfficientNet and AlexNet-based approaches.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="process-step">
+
+                <div class="step-number">
+                    4
+                </div>
+
+                <div class="step-content">
+
+                    <h5>
+                        Model Training
+                    </h5>
+
+                    <p>
+                        Candidate architectures were trained using the
+                        prepared medical imaging data. Training and
+                        validation behavior was monitored throughout the
+                        development process.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="process-step">
+
+                <div class="step-number">
+                    5
+                </div>
+
+                <div class="step-content">
+
+                    <h5>
+                        Performance Evaluation
+                    </h5>
+
+                    <p>
+                        Model performance was examined using accuracy,
+                        precision, recall, F1-score, AUC and confusion
+                        matrix-based analysis.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="process-step">
+
+                <div class="step-number">
+                    6
+                </div>
+
+                <div class="step-content">
+
+                    <h5>
+                        Final Model Selection
+                    </h5>
+
+                    <p>
+                        The model demonstrating the most suitable overall
+                        performance was selected for integration into the
+                        Doctor Vision diagnostic workflow.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- DATASET -->
+
+    <section class="card-section">
+
+        <div class="section-heading">
+
+            <div class="section-icon">
+                <i class="fas fa-database"></i>
+            </div>
+
+            <h2>
+                Medical Imaging Dataset
+            </h2>
+
+        </div>
+
+        <p>
+            The pneumonia model development process used a structured
+            chest X-ray dataset containing images belonging to Normal and
+            Pneumonia categories. The dataset was organized into training,
+            testing and validation subsets.
+        </p>
+
+        <div class="row mt-4">
+
+            <div class="col-md-4 mb-3">
+
+                <div class="metric-card">
+
+                    <i class="fas fa-images"></i>
+
+                    <h5>
+                        Chest X-Ray Images
+                    </h5>
+
+                    <p>
+                        Medical imaging data prepared for binary
+                        classification.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4 mb-3">
+
+                <div class="metric-card">
+
+                    <i class="fas fa-lungs"></i>
+
+                    <h5>
+                        Two Classes
+                    </h5>
+
+                    <p>
+                        Normal and Pneumonia image categories.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4 mb-3">
+
+                <div class="metric-card">
+
+                    <i class="fas fa-layer-group"></i>
+
+                    <h5>
+                        Train / Test / Validation
+                    </h5>
+
+                    <p>
+                        Separate data partitions used during development
+                        and evaluation.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ARCHITECTURES -->
+
+    <section class="card-section">
+
+        <div class="section-heading">
+
+            <div class="section-icon">
+                <i class="fas fa-network-wired"></i>
+            </div>
+
+            <h2>
+                CNN Architecture Evaluation
+            </h2>
+
+        </div>
+
+        <p>
+            Multiple convolutional neural network architectures were
+            investigated to determine which approach provided the most
+            suitable performance for medical image classification.
+        </p>
+
+
+        <div class="table-responsive">
+
+            <table class="model-table">
+
+                <thead>
+
+                    <tr>
+                        <th>
+                            Architecture
+                        </th>
+
+                        <th>
+                            Model Family
+                        </th>
+
+                        <th>
+                            Evaluation
+                        </th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>
+                            AlexNet
+                        </td>
+
+                        <td>
+                            CNN
+                        </td>
+
+                        <td>
+                            <span class="status">
+                                Evaluated
+                            </span>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td>
+                            VGG16
+                        </td>
+
+                        <td>
+                            CNN
+                        </td>
+
+                        <td>
+                            <span class="status">
+                                Evaluated
+                            </span>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td>
+                            DenseNet-121
+                        </td>
+
+                        <td>
+                            Dense CNN
+                        </td>
+
+                        <td>
+                            <span class="status">
+                                Evaluated
+                            </span>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td>
+                            DenseNet-201
+                        </td>
+
+                        <td>
+                            Dense CNN
+                        </td>
+
+                        <td>
+                            <span class="status">
+                                Evaluated
+                            </span>
+                        </td>
+                    </tr>
+
+
+                    <tr class="selected-model">
+
+                        <td>
+                            <strong>
+                                ResNet-50V2
+                            </strong>
+                        </td>
+
+                        <td>
+                            Residual CNN
+                        </td>
+
+                        <td>
+                            <span class="status">
+                                Selected
+                            </span>
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+                        <td>
+                            InceptionV3
+                        </td>
+
+                        <td>
+                            CNN
+                        </td>
+
+                        <td>
+                            <span class="status">
+                                Evaluated
+                            </span>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td>
+                            EfficientNet-B7
+                        </td>
+
+                        <td>
+                            Efficient CNN
+                        </td>
+
+                        <td>
+                            <span class="status">
+                                Evaluated
+                            </span>
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- PERFORMANCE -->
+
+    <section class="card-section">
+
+        <div class="section-heading">
+
+            <div class="section-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+
+            <h2>
+                Model Performance
+            </h2>
+
+        </div>
+
+
+        <div class="row align-items-center">
+
+            <div class="col-md-5 mb-4">
+
+                <div class="accuracy-box">
+
+                    <div class="accuracy-value">
+                        &gt;95%
+                    </div>
+
+                    <div class="accuracy-label">
+                        Final Model Accuracy
+                    </div>
+
+                    <div class="accuracy-note">
+                        Reported project performance during model
+                        evaluation.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-7">
+
+                <p>
+                    Model performance was assessed using multiple
+                    evaluation measures rather than relying exclusively
+                    on training accuracy. This included analysis of
+                    classification accuracy, precision, recall, F1-score,
+                    AUC and confusion matrices.
+                </p>
+
+                <p>
+                    The final model was selected after comparing the
+                    candidate architectures and evaluating their behavior
+                    on the available evaluation data.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- EVALUATION METRICS -->
+
+    <section class="card-section">
+
+        <div class="section-heading">
+
+            <div class="section-icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+
+            <h2>
+                Evaluation Metrics
+            </h2>
+
+        </div>
+
+
+        <div class="row">
+
+            <div class="col-md-3 mb-3">
+
+                <div class="metric-card">
+
+                    <i class="fas fa-bullseye"></i>
+
+                    <h5>
+                        Accuracy
+                    </h5>
+
+                    <p>
+                        Measures the proportion of correctly classified
+                        samples.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-3 mb-3">
+
+                <div class="metric-card">
+
+                    <i class="fas fa-crosshairs"></i>
+
+                    <h5>
+                        Precision
+                    </h5>
+
+                    <p>
+                        Measures how many predicted positive cases were
+                        actually positive.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-3 mb-3">
+
+                <div class="metric-card">
+
+                    <i class="fas fa-search"></i>
+
+                    <h5>
+                        Recall
+                    </h5>
+
+                    <p>
+                        Measures the ability to identify positive cases.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-3 mb-3">
+
+                <div class="metric-card">
+
+                    <i class="fas fa-balance-scale"></i>
+
+                    <h5>
+                        F1-Score
+                    </h5>
+
+                    <p>
+                        Combines precision and recall into a single
+                        measure.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- VALIDATION -->
+
+    <section class="card-section">
+
+        <div class="section-heading">
+
+            <div class="section-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+
+            <h2>
+                Validation
+            </h2>
+
+        </div>
+
+        <div class="validation-box">
+
+            <h5>
+                Independent Validation
+            </h5>
+
+            <p>
+                The model development process included validation of the
+                trained models using data separate from the training
+                samples. This provided an additional measure of how the
+                trained models behaved on previously unseen medical
+                images.
+            </p>
+
+        </div>
+
+        <p class="mt-4">
+            The validation stage was used alongside testing and metric
+            analysis when comparing candidate architectures and selecting
+            the final model for the application.
+        </p>
+
+    </section>
+
+
+    <!-- FINAL MODEL -->
+
+    <section class="card-section">
+
+        <div class="section-heading">
+
+            <div class="section-icon">
+                <i class="fas fa-microchip"></i>
+            </div>
+
+            <h2>
+                Final Model Integration
+            </h2>
+
+        </div>
+
+        <p>
+            After evaluating the candidate architectures, the selected
+            model was integrated into the Doctor Vision diagnostic
+            workflow. The application accepts a medical image, processes
+            it through the corresponding trained model and presents the
+            resulting prediction and confidence information to the user.
+        </p>
+
+        <p>
+            The model is intended to provide AI-assisted analysis and
+            should be considered a supporting tool rather than a
+            replacement for professional medical evaluation.
+        </p>
+
+    </section>
+
+
+    <!-- DISCLAIMER -->
+
+    <section class="card-section">
+
+        <div class="disclaimer">
+
+            <p>
+                <i class="fas fa-exclamation-triangle"></i>
+
+                <strong>Medical Disclaimer:</strong>
+                Doctor Vision provides AI-assisted medical image analysis
+                and general healthcare information. Model predictions are
+                not a substitute for professional medical diagnosis,
+                clinical examination or advice from a qualified healthcare
+                professional.
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =========================
+     FOOTER
+========================== -->
+
+<footer>
+
+    <div class="container-fluid">
+
+        <div class="row">
+
+            <div class="col-md-4 mb-3">
+
+                <h5>
+                    About Doctor Vision
+                </h5>
+
+                <p>
+                    Doctor Vision integrates artificial intelligence and
+                    computer vision to provide AI-assisted medical image
+                    analysis and healthcare information tools.
+                </p>
+
+            </div>
+
+
+            <div class="col-md-4 mb-3">
+
+                <h5>
+                    Contact Us
+                </h5>
+
+                <p>
+                    Email:
+                    <a href="mailto:lavangupta2005@gmail.com">
+                        lavangupta2005@gmail.com
+                    </a>
+                </p>
+
+            </div>
+
+
+            <div class="col-md-4 mb-3">
+
+                <h5>
+                    Follow Us
+                </h5>
+
+                <a
+                    href="https://www.linkedin.com/in/lavan-gupta-bb6850259"
+                    target="_blank"
+                >
+                    <i class="fab fa-linkedin fa-2x mr-3"></i>
+                </a>
+
+                <a
+                    href="https://www.instagram.com/lavangupta63"
+                    target="_blank"
+                >
+                    <i class="fab fa-instagram fa-2x"></i>
+                </a>
+
+            </div>
+
+        </div>
+
+        <hr style="border-color: rgba(255,255,255,0.25);">
+
+        <p class="mb-0">
+            &copy; 2026 Doctor Vision. All rights reserved.
+        </p>
+
+    </div>
+
+</footer>
+
+
+<script>
+
+    function toggleSidebar() {
+
+        const sidebar = document.getElementById("sidebar");
+
+        if (sidebar) {
+            sidebar.classList.toggle("show");
+        }
+
+    }
+
+</script>
+
+</body>
+</html>
